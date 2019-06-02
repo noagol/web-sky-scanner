@@ -1,0 +1,53 @@
+﻿
+@{
+    ViewBag.Title = "Load Display";
+}
+
+
+<div class="map">
+    <canvas id="mapCanvas"></canvas>
+    <script>
+        var pathArray = window.location.pathname.split('/');
+        var fileName = pathArray[2]
+        var updateInterval = 1000 * pathArray[3]
+
+        var lonArr = []
+        var latArr = []
+        var j = 0
+        var intervalID = ""
+
+        
+        function updatePath() {
+            /// <summary>
+            /// Updates the path.
+            /// </summary>
+            if (j >= lonArr.length) {
+                window.clearInterval(intervalID)
+                alert("Animation Ended")
+                return
+            }
+
+            drawPath(lonArr.slice(0, j + 1), latArr.slice(0, j + 1))
+            j += 1
+        }
+
+
+        window.onload = function () {
+            // Load the file
+            $.get('/loadFile/' + fileName, function (response) {
+                var sp = response.split("\n")
+                for (i = 0; i < sp.length; i++) {
+                    if (sp[i] != "") {
+                        var values = sp[i].split(",")
+                        lonArr.push(parseFloat(values[0]))
+                        latArr.push(parseFloat(values[1]))
+                    }
+                }
+            });
+
+            // Update every interval
+            intervalID = setInterval(updatePath, updateInterval)
+        }
+    </script>
+</div>
+

@@ -1,0 +1,78 @@
+﻿
+@{
+    ViewBag.Title = "Save Animation";
+}
+
+<div class="map">
+    <canvas id="mapCanvas"></canvas>
+    <script>
+        var pathArray = window.location.pathname.split('/');
+        var ip = pathArray[2]
+        var port = pathArray[3]
+        var updateInterval = 1000 * parseInt(pathArray[4])
+        var animationTime = parseInt(pathArray[5]) * 1000
+        var startTime = performance.now();
+        var filename = pathArray[6]
+
+        var lonArr = []
+        var latArr = []
+        var rudderArr = []
+        var throttleArr = []
+
+        // Update the path every interval
+        function updatePath() {
+            $.get('/location/' + ip + '/' + port, function (response) {
+                var sp = response.split(",")
+                var lon = parseFloat(sp[0])
+                var lat = parseFloat(sp[1])
+
+                lonArr.push(lon)
+                latArr.push(lat)
+                drawPath(lonArr, latArr)
+            });
+
+            $.get('/info/' + ip + '/' + port, function (response) {
+                var sp = response.split(",")
+                var rudder = parseFloat(sp[0])
+                var throttle = parseFloat(sp[1])
+
+                rudderArr.push(rudder)
+                throttleArr.push(throttle)
+            });
+        }
+
+        // Run the animation
+        function runAnimation(callback, delay) {
+            var intervalID = window.setInterval(function () {
+
+                callback();
+                var timePassed = performance.now() - startTime
+                if (timePassed >= animationTime) {
+                    window.clearInterval(intervalID);
+
+                    // Save to file {lon},{lat},{rudder},{throttle}
+                    var content = ""
+                    for (i = 0; i < lonArr.length; i++) {
+                        if (lonArr[i] && latArr[i] != undefined && rudderArr[i] != undefined != undefined && throttleArr[i] != undefined) {
+                            content += lonArr[i] + "," + latArr[i] + "," + rudderArr[i] + "," + throttleArr[i] + "\n"
+                        }
+                    }
+
+                    // Save the file
+                    $.post('/saveFile/' + filename, content).done(function () {
+                        updatePath()
+                        setInterval(updatePath, updateInterval)
+                    });
+
+                }
+            }, delay);
+        }
+
+        window.onload = function () {
+            updatePath()
+            runAnimation(updatePath, updateInterval)
+        }
+    </script>
+</div>
+
+
