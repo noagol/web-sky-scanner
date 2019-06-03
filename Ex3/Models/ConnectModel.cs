@@ -126,6 +126,7 @@ namespace FlightSimulator.Model
         public void stop()
         {
             shouldStop = true;
+            thread.Join();
         }
 
         /// <summary>Reads the until new line.</summary>

@@ -13,9 +13,6 @@ namespace Ex3.Controllers
 {
     public class HomeController : Controller
     {
-        static Dictionary<string, ConnectModel> models = new Dictionary<string, ConnectModel>();
-
-
         /// <summary>
         ///   <para>
         ///  Displays a dot where the plane at or load path from file.
@@ -118,18 +115,7 @@ namespace Ex3.Controllers
         public string GetLocation(string ip, int port)
         {
             // Get model
-            string key = String.Format("{0}:{1}", ip, port);
-            ConnectModel model;
-
-            if (models.ContainsKey(key))
-            {
-                model = models[key];
-            }
-            else
-            {
-                model = new ConnectModel(ip, port);
-                models[key] = model;
-            }
+            ConnectModel model = new ConnectModel(ip, port);
 
             // Wait for update event
             bool lonChanged = false;
@@ -163,6 +149,7 @@ namespace Ex3.Controllers
             float lat = model.Lat;
             float lon = model.Lon;
 
+            model.stop();
             // Return the position
             return String.Format("{0},{1}", lon, lat);
         }
@@ -176,18 +163,7 @@ namespace Ex3.Controllers
         public string GetInfo(string ip, int port)
         {
             // Load model
-            string key = String.Format("{0}:{1}", ip, port);
-            ConnectModel model;
-
-            if (models.ContainsKey(key))
-            {
-                model = models[key];
-            }
-            else
-            {
-                model = new ConnectModel(ip, port);
-                models[key] = model;
-            }
+            ConnectModel model = new ConnectModel(ip, port);
 
             // Wait for update event
             bool rudderChanged = false;
@@ -221,6 +197,7 @@ namespace Ex3.Controllers
             float rudder = model.Rudder;
             float throttle = model.Throttle;
 
+            model.stop();
             // Return the values
             return String.Format("{0},{1}", rudder, throttle);
         }
